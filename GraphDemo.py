@@ -20,6 +20,8 @@ import matplotlib.animation as animation
 
 from matplotlib import style
 
+import json
+
 # All Python Function are written here for this project
 # Function for increasment of j For Time Graph
 j = 0.1
@@ -32,27 +34,35 @@ def time_increasement():
 # Python Function For Bar Progress and For Variable Changing
 def on_message(clien, userdata, msg):
     message0 = str(msg.payload.decode("utf-8"))
-    message1 = int(float(message0))
+    m_in = json.loads(message0)
+    msg1 = m_in['Break Force Left']
+    msg2 = m_in['Break Force Right']
+    message1 = int(m_in['Break Force Left'])
+    message2 = int(m_in['Break Force Right'])
+    message3 = int(m_in['TestStatus'])
+    message4 = int(m_in['Axle Weight'])
     
     # Calling back function to increase time    
     time_increasement()
     
-    # Getting topic name
-    topic = list({msg.topic})[0]
+    bar1['value']=message1/3
+    lbl2.config(text=message1)
+    file = open("sampleText.txt", "a")
+    file.writelines(repr(j) + ',' +repr(message1)+"\n")
+    file.close()
     
-    # Validate topic name for apply conditional statement
-    if topic== "SPEED":
-        bar1['value']=message1
-        lbl2.config(text=message1)
-        file = open("sampleText.txt", "a")
-        file.writelines(repr(j) + ',' +repr(message1)+"\n")
-        file.close()
-    elif topic== "TEMPRATURE":
-        bar2['value'] = message1/3
-        lbl3.config(text=message1)
-        file = open("sampleText2.txt", "a")
-        file.writelines(repr(j) + ',' +repr(message1) +"\n")
-        file.close()
+    bar2['value'] = message2/3
+    lbl3.config(text=message2)
+    file = open("sampleText2.txt", "a")
+    file.writelines(repr(j) + ',' +repr(message2) +"\n")
+    file.close()
+    
+    car_testing_status(message3)
+    
+    excelWeightlbl.config(text=message4)
+    
+    
+    
 
 # Function to update graph
 def animate(i):
@@ -131,14 +141,14 @@ labelimg1.place(x=45, y=100)
 mqttBroker = "3.110.187.253"
 client = mqtt.Client("Smartphone")
 client.connect(mqttBroker)
-client.subscribe("SPEED")
+client.subscribe("001/TESTER/BREAK/BREAKFORCE")
 client.on_message = on_message
 client.subscribe("TEMPRATURE")
 client.on_message = on_message
 client.loop_start()
 
 # Heading Labeling
-lbl1 = Label(root,text="Apply parking brack to max and take a rest", foreground="white", background="black", font=(font_family, 25, 'bold'), width=100, padding=(250, 20))
+lbl1 = Label(root,text="Apply parking break to max and take a rest", foreground="white", background="black", font=(font_family, 25, 'bold'), width=100, padding=(250, 20))
 lbl1.pack()
 
 # Informating Text Labeling
@@ -201,11 +211,11 @@ measurmentLabel1= Label(root, text=300, font=(15), background=root_background_co
 measurmentLabel1.place(x=490, y=308)
 
 # Code To show excel waight
-excelWaightlbl = Label(root, text="Axle Weight", foreground=information_text_forground_color, background=information_text_background_color, font=(font_family, 14,'bold'), padding=(20,10))
-excelWaightlbl.place(x=290, y=358)
+excelWeightlbl_text = Label(root, text="Axle Weight", foreground=information_text_forground_color, background=information_text_background_color, font=(font_family, 14,'bold'), padding=(20,10))
+excelWeightlbl_text.place(x=290, y=358)
 
-excelWaightlbl = Label(root, text="1500", foreground=dynamic_data_forground_color, background=dynamic_data_background_color, font=(font_family, 14,'bold'), padding=(20,10))
-excelWaightlbl.place(x=330, y=418)
+excelWeightlbl = Label(root, text="1500", foreground=dynamic_data_forground_color, background=dynamic_data_background_color, font=(font_family, 14,'bold'), padding=(20,10))
+excelWeightlbl.place(x=330, y=418)
 
 # Code to show variable data in graph
 style.use("ggplot")
@@ -243,7 +253,7 @@ testing_status.place(x=1050, y=115)
 test_result_text = Label(root, text="Test Result:", font=(font_family, 18, 'bold'), background=information_text_background_color, foreground=information_text_forground_color, padding=(20,5))
 test_result_text.place(x=450, y=655)
 
-test_result = Label(root, text="NOT OK", font=(font_family, 18, 'bold'), background=dynamic_data_background_color, foreground=dynamic_data_forground_color, padding=(20,5))
+test_result = Label(root, text="NOT OK", font=(font_family, 16, 'bold'), background=dynamic_data_background_color, foreground=dynamic_data_forground_color, padding=(20,5))
 test_result.place(x=640, y=655)
 
 root.mainloop()
