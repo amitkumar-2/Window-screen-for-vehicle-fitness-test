@@ -34,38 +34,39 @@ def time_increasement():
     # return None
 
 # Python Function For Bar Progress and For Variable Changing
-def on_message(clien, userdata, msg):
-    message0 = str(msg.payload.decode("utf-8"))
-    m_in = json.loads(message0)
-    msg1 = m_in['Break Force Left']
-    msg2 = m_in['Break Force Right']
-    message1 = int(m_in['Break Force Left'])
-    message2 = int(m_in['Break Force Right'])
-    message3 = int(m_in['TestStatus'])
-    message4 = int(m_in['Axle Weight'])
+def on_mqttMessage(clien, userdata, msg):
+    if msg.topic == "001/TESTER/BREAK/BREAKFORCE": 
+        message0 = str(msg.payload.decode("utf-8"))
+        m_in = json.loads(message0)
+        break_force_left = int(m_in['Break Force Left'])
+        break_force_right = int(m_in['Break Force Right'])
+        test_status = int(m_in['TestStatus'])
+        axle_weight = int(m_in['Axle Weight'])
+        # Calling back function to increase time    
+        time_increasement()
+        
+        bar1['value']=break_force_left/3
+        lbl2.config(text=break_force_left)
+        file = open("sampleText.txt", "a")
+        file.writelines(repr(j) + ',' +repr(break_force_left)+"\n")
+        file.close()
     
-    client.publish('TEST', root_background_color)
+        bar2['value'] = break_force_right/3
+        lbl3.config(text=break_force_right)
+        file = open("sampleText2.txt", "a")
+        file.writelines(repr(j) + ',' +repr(break_force_right) +"\n")
+        file.close()
+        
+        car_testing_status(test_status)
+        
+        excelWeightlbl.config(text=axle_weight)
     
+def publish_msg(topic,msg):
+    client.publish(topic,msg)
     
-    # Calling back function to increase time    
-    time_increasement()
-    
-    bar1['value']=message1/3
-    lbl2.config(text=message1)
-    file = open("sampleText.txt", "a")
-    file.writelines(repr(j) + ',' +repr(message1)+"\n")
-    file.close()
-    
-    bar2['value'] = message2/3
-    lbl3.config(text=message2)
-    file = open("sampleText2.txt", "a")
-    file.writelines(repr(j) + ',' +repr(message2) +"\n")
-    file.close()
-    
-    car_testing_status(message3)
-    
-    excelWeightlbl.config(text=message4)
-    
+def on_mqttConnect(client, userdata, flags, rc):
+    print("Connected with result code "+str(rc))
+    client.subscribe("001/TESTER/BREAK/BREAKFORCE")
     
     
 
@@ -113,35 +114,8 @@ def car_testing_status (status_code):
 # Function to reset page
 def run():
     reset_first_page(root)
-def reset_first_page (root):
-    file = open("sampleText.txt", "w")
-    file.write('')
-    file.close()
-    
-    file = open("sampleText2.txt", "w")
-    file.write('')
-    file.close()
-    
-    bar1['value'] = 0
-    bar2['value'] = 0
-    
-    # mqttBroker = "3.110.187.253"
-    # client = mqtt.Client("Temprature_Inside")
-    # client.connect(mqttBroker)
-    # client.loop_start()
-    # client.publish('TEST', root_background_color)
-    # client.loop_stop()
-    
-    # MQtt_pub.PUB()
-    def PUB():
-        mqttBroker = "3.110.187.253"
-        client = mqtt.Client("Temprature_Inside")
-        client.connect(mqttBroker)
-        # print('hi')
-        payload = 1
-        client.publish('001/OPERATOR/BREAK/REQ', payload)
-    
-    PUB()
+def reset_first_page (root):  
+    publish_msg('001/OPERATOR/BREAK/REQ', 'START_TEST')
 
 
 # Color variable to store color
@@ -179,14 +153,12 @@ labelimg1.place(x=45, y=100)
 # MQTT All Process Code Is Here
 mqttBroker = "3.110.187.253"
 client = mqtt.Client("Smartphone")
-client.connect(mqttBroker)
-client.subscribe("001/TESTER/BREAK/BREAKFORCE")
-client.on_message = on_message
-client.subscribe("TEMPRATURE")
-client.on_message = on_message
+client.on_message = on_mqttMessage
+client.on_connect = on_mqttConnect
+client.connect(mqttBroker,1883,60)
 client.loop_start()
-client.publish('TEST', 10)
-client.loop_stop()
+#client.publish('TEST', 10)
+#client.loop_stop()
 
 # Heading Labeling
 lbl1 = Label(root,text="Apply parking break to max and take a rest", foreground="white", background="black", font=(font_family, 25, 'bold'), width=100, padding=(250, 20))
@@ -251,7 +223,7 @@ measurmentLabel1.place(x=490, y=358)
 measurmentLabel1= Label(root, text=300, font=('',12, 'bold'), background=root_background_color)
 measurmentLabel1.place(x=490, y=308)
 
-# Code To show excel waight
+# Code To show axle weight
 excelWeightlbl_text = Label(root, text="Axle Weight", foreground=information_text_forground_color, background=information_text_background_color, font=(font_family, 14,'bold'), padding=(20,10))
 excelWeightlbl_text.place(x=290, y=358)
 
@@ -287,7 +259,7 @@ break_efficient_value.place(x=300, y=655)
 testing_status_text = Label(root, text="Testing Status:", font=(font_family, 14, 'bold'), background=information_text_background_color, foreground=information_text_forground_color, padding=(20,5))
 testing_status_text.place(x=850, y=115)
 
-testing_status = Label(root, text="Waiting For Vehicle", font=(font_family, 14, 'bold'), background=dynamic_data_background_color, foreground=dynamic_data_forground_color, padding=(5,5))
+testing_status = Label(root, text="Ideal", font=(font_family, 14, 'bold'), background=dynamic_data_background_color, foreground=dynamic_data_forground_color, padding=(5,5))
 testing_status.place(x=1050, y=115)
 
 # Test result ok or not ok
@@ -299,25 +271,16 @@ test_result.place(x=640, y=657)
 
 # Styling reset buttom with the help of style configuration
 s1 = ttk.Style()
-# s1.configure("Custom.TButton", foreground=information_text_forground_color, background='white', font =
-#                ('calibri', 15, 'bold'))
-
-# Reset button text label
-# reset_button = Button(root, text='Reset' ,command=run, style='Custom.TButton')
-# reset_button.place(x=1175, y=670)
-
-
 def on_enter(event):
     s1.configure("Custom.TButton", foreground=information_text_forground_color, background='white', font =
                ('calibri', 15, 'bold'))
-
+    
 def on_leave(event):
     s1.configure("Custom.TButton", foreground=information_text_forground_color, background='white', font =
                ('calibri', 13, 'bold'))
-
+    
 s1.configure("Custom.TButton", foreground=information_text_forground_color, background='white', font =
                ('calibri', 13, 'bold'))
-
 
 button = Button(root, text="Reset", width=10, style="Custom.TButton", command=run)
 button.place(x=1175, y=670)
@@ -326,51 +289,4 @@ button.bind("<Enter>", on_enter)
 button.bind("<Leave>", on_leave)
 
 
-
 root.mainloop()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# import tkinter as tk
-# import pandas as pd
-# import matplotlib.pyplot as plt
-# from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-
-# data = {'year': [1920,1930,1940,1950,1960,1970,1980,1990,2000,2010],
-#         'unemployment_rates': [9.8,12,8,7.2,6.9,7,6.5,6.2,5.5,6.3]
-#         }
-
-# dataframe = pd.DataFrame(data)
-
-
-# root = tk.Tk()
-
-# figure = plt.Figure(figsize=(5,4), dpi=100)
-
-# # Number of rows, number of cols, index position
-# figure_plot = figure.add_subplot(1, 1, 1)
-# figure_plot.set_ylabel('Unemployment Rate')
-# line_graph = FigureCanvasTkAgg(figure, root)
-# line_graph.get_tk_widget().pack(side='right')
-# dataframe = dataframe[['year', 'unemployment_rates']].groupby('year').sum()
-# dataframe.plot(kind='line', legend=True, ax=figure_plot,
-#                color='red', marker='o', fontsize=10)
-# figure_plot.set_title('Year vs. Unemployment Rate')
-
-# print(data['year'][0])
-
-# root.mainloop()
