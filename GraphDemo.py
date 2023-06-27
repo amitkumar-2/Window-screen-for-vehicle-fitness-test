@@ -1,6 +1,6 @@
-from tkinter import *
+from tkinter import Tk
 
-from tkinter.ttk import *
+from tkinter.ttk import Label, Progressbar, Button
 
 import paho.mqtt.client as mqtt
 
@@ -22,6 +22,8 @@ from matplotlib import style
 
 import json
 
+import MQtt_pub
+
 # All Python Function are written here for this project
 # Function for increasment of j For Time Graph
 j = 0.1
@@ -41,6 +43,9 @@ def on_message(clien, userdata, msg):
     message2 = int(m_in['Break Force Right'])
     message3 = int(m_in['TestStatus'])
     message4 = int(m_in['Axle Weight'])
+    
+    client.publish('TEST', root_background_color)
+    
     
     # Calling back function to increase time    
     time_increasement()
@@ -103,7 +108,40 @@ def car_testing_status (status_code):
     elif status_code == 4:
         testing_status.config(text="Test Finished")
     elif status_code == 5:
-        testing_status.config(text="Test Failed")
+        testing_status.config(text="Test Failed", foreground='red')
+        
+# Function to reset page
+def run():
+    reset_first_page(root)
+def reset_first_page (root):
+    file = open("sampleText.txt", "w")
+    file.write('')
+    file.close()
+    
+    file = open("sampleText2.txt", "w")
+    file.write('')
+    file.close()
+    
+    bar1['value'] = 0
+    bar2['value'] = 0
+    
+    # mqttBroker = "3.110.187.253"
+    # client = mqtt.Client("Temprature_Inside")
+    # client.connect(mqttBroker)
+    # client.loop_start()
+    # client.publish('TEST', root_background_color)
+    # client.loop_stop()
+    
+    # MQtt_pub.PUB()
+    def PUB():
+        mqttBroker = "3.110.187.253"
+        client = mqtt.Client("Temprature_Inside")
+        client.connect(mqttBroker)
+        # print('hi')
+        payload = 1
+        client.publish('001/OPERATOR/BREAK/REQ', payload)
+    
+    PUB()
 
 
 # Color variable to store color
@@ -120,7 +158,8 @@ root = Tk()
 root.config(background=root_background_color)
 root.title("CTI Vehicle Fitness Test")
 root.iconbitmap(r"C:\Users\cti-2\Downloads\R&D Team WhatsappFiles\CTIWhatsappForMe\WhatsApp-Image-2023-06-17-at-11.15.32-AM-_1_.ico")
-root.geometry("1400x750")
+root.geometry("1500x770")
+root.minsize(1400,750)
 
 # Adding background images to make rounded corner of labels
 image = Image.open("Green.png")
@@ -146,6 +185,8 @@ client.on_message = on_message
 client.subscribe("TEMPRATURE")
 client.on_message = on_message
 client.loop_start()
+client.publish('TEST', 10)
+client.loop_stop()
 
 # Heading Labeling
 lbl1 = Label(root,text="Apply parking break to max and take a rest", foreground="white", background="black", font=(font_family, 25, 'bold'), width=100, padding=(250, 20))
@@ -172,42 +213,42 @@ s.configure("red.Vertical.TProgressbar", foreground='#CC0CA1', background='#CC0C
 s.configure("yellow.Vertical.TProgressbar", foreground='#2BB3E1', background='#2BB3E1')
 
 # Progress Bar widget
-bar1 = Progressbar(root,orient=VERTICAL, length=300,  style='red.Vertical.TProgressbar')
+bar1 = Progressbar(root,orient='vertical', length=300,  style='red.Vertical.TProgressbar')
 bar1.place(x=125, y=320, width=100)
 
-bar2 = Progressbar(root,orient=VERTICAL, length=300,  style="yellow.Vertical.TProgressbar")
+bar2 = Progressbar(root,orient='vertical', length=300,  style="yellow.Vertical.TProgressbar")
 bar2.place(x=525, y=320, width=100)
 
 # Making Labels for progressbar measurement Numbers For Progressbar 1
-measurmentLabel1= Label(root, text=0, font=(15), background=root_background_color)
+measurmentLabel1= Label(root, text=0, font=('',12, 'bold'), background=root_background_color)
 measurmentLabel1.place(x=110, y=608)
-measurmentLabel1= Label(root, text=50, font=(15), background=root_background_color)
+measurmentLabel1= Label(root, text=50, font=('',12, 'bold'), background=root_background_color)
 measurmentLabel1.place(x=100, y=558)
-measurmentLabel1= Label(root, text=100, font=(15), background=root_background_color)
+measurmentLabel1= Label(root, text=100, font=('',12, 'bold'), background=root_background_color)
 measurmentLabel1.place(x=90, y=508)
-measurmentLabel1= Label(root, text=150, font=(15), background=root_background_color)
+measurmentLabel1= Label(root, text=150, font=('',12, 'bold'), background=root_background_color)
 measurmentLabel1.place(x=90, y=458)
-measurmentLabel1= Label(root, text=200, font=(15), background=root_background_color)
+measurmentLabel1= Label(root, text=200, font=('',12, 'bold'), background=root_background_color)
 measurmentLabel1.place(x=90, y=408)
-measurmentLabel1= Label(root, text=250, font=(15), background=root_background_color)
+measurmentLabel1= Label(root, text=250, font=('',12, 'bold'), background=root_background_color)
 measurmentLabel1.place(x=90, y=358)
-measurmentLabel1= Label(root, text=300, font=(15), background=root_background_color)
+measurmentLabel1= Label(root, text=300, font=('',12, 'bold'), background=root_background_color)
 measurmentLabel1.place(x=90, y=308)
 
 # Making Labels for progressbar measurement Numbers For Progressbar 2
-measurmentLabel1= Label(root, text=0, font=(15), background=root_background_color)
+measurmentLabel1= Label(root, text=0, font=('',12, 'bold'), background=root_background_color)
 measurmentLabel1.place(x=510, y=608)
-measurmentLabel1= Label(root, text=50, font=(15), background=root_background_color)
+measurmentLabel1= Label(root, text=50, font=('',12, 'bold'), background=root_background_color)
 measurmentLabel1.place(x=500, y=558)
-measurmentLabel1= Label(root, text=100, font=(15), background=root_background_color)
+measurmentLabel1= Label(root, text=100, font=('',12, 'bold'), background=root_background_color)
 measurmentLabel1.place(x=490, y=508)
-measurmentLabel1= Label(root, text=150, font=(15), background=root_background_color)
+measurmentLabel1= Label(root, text=150, font=('',12, 'bold'), background=root_background_color)
 measurmentLabel1.place(x=490, y=458)
-measurmentLabel1= Label(root, text=200, font=(15), background=root_background_color)
+measurmentLabel1= Label(root, text=200, font=('',12, 'bold'), background=root_background_color)
 measurmentLabel1.place(x=490, y=408)
-measurmentLabel1= Label(root, text=250, font=(15), background=root_background_color)
+measurmentLabel1= Label(root, text=250, font=('',12, 'bold'), background=root_background_color)
 measurmentLabel1.place(x=490, y=358)
-measurmentLabel1= Label(root, text=300, font=(15), background=root_background_color)
+measurmentLabel1= Label(root, text=300, font=('',12, 'bold'), background=root_background_color)
 measurmentLabel1.place(x=490, y=308)
 
 # Code To show excel waight
@@ -254,7 +295,37 @@ test_result_text = Label(root, text="Test Result:", font=(font_family, 18, 'bold
 test_result_text.place(x=450, y=655)
 
 test_result = Label(root, text="NOT OK", font=(font_family, 16, 'bold'), background=dynamic_data_background_color, foreground=dynamic_data_forground_color, padding=(20,5))
-test_result.place(x=640, y=655)
+test_result.place(x=640, y=657)
+
+# Styling reset buttom with the help of style configuration
+s1 = ttk.Style()
+# s1.configure("Custom.TButton", foreground=information_text_forground_color, background='white', font =
+#                ('calibri', 15, 'bold'))
+
+# Reset button text label
+# reset_button = Button(root, text='Reset' ,command=run, style='Custom.TButton')
+# reset_button.place(x=1175, y=670)
+
+
+def on_enter(event):
+    s1.configure("Custom.TButton", foreground=information_text_forground_color, background='white', font =
+               ('calibri', 15, 'bold'))
+
+def on_leave(event):
+    s1.configure("Custom.TButton", foreground=information_text_forground_color, background='white', font =
+               ('calibri', 13, 'bold'))
+
+s1.configure("Custom.TButton", foreground=information_text_forground_color, background='white', font =
+               ('calibri', 13, 'bold'))
+
+
+button = Button(root, text="Reset", width=10, style="Custom.TButton", command=run)
+button.place(x=1175, y=670)
+
+button.bind("<Enter>", on_enter)
+button.bind("<Leave>", on_leave)
+
+
 
 root.mainloop()
 
