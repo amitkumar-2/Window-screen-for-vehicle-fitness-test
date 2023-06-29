@@ -29,7 +29,7 @@ import MQtt_pub
 j = 0.1
 def time_increasement():
     global j
-    if j<30.1:
+    if j<300.1:
         j +=0.1
     # return None
 
@@ -225,10 +225,17 @@ measurmentLabel1.place(x=490, y=308)
 
 # Code To show axle weight
 excelWeightlbl_text = Label(root, text="Axle Weight", foreground=information_text_forground_color, background=information_text_background_color, font=(font_family, 14,'bold'), padding=(20,10))
-excelWeightlbl_text.place(x=290, y=358)
+excelWeightlbl_text.place(x=290, y=308)
 
 excelWeightlbl = Label(root, text="1500", foreground=dynamic_data_forground_color, background=dynamic_data_background_color, font=(font_family, 14,'bold'), padding=(20,10))
-excelWeightlbl.place(x=330, y=418)
+excelWeightlbl.place(x=325, y=368)
+
+# Code to Show RPM
+rpm_text = Label(root, text="RPM", foreground=information_text_forground_color, background=information_text_background_color, font=(font_family, 14,'bold'), padding=(20,10))
+rpm_text.place(x=325, y=450)
+
+rpm_text = Label(root, text="220", foreground=dynamic_data_forground_color, background=dynamic_data_background_color, font=(font_family, 14,'bold'), padding=(20,10))
+rpm_text.place(x=330, y=510)
 
 # Code to show variable data in graph
 style.use("ggplot")
