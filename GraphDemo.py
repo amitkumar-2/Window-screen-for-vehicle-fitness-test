@@ -24,6 +24,8 @@ import json
 
 import MQtt_pub
 
+from deleteItAfterDemo import demo
+
 # All Python Function are written here for this project
 # Function for increasment of j For Time Graph
 j = 0.1
@@ -35,6 +37,12 @@ def time_increasement():
 
 # Python Function For Bar Progress and For Variable Changing
 def on_mqttMessage(clien, userdata, msg):
+    # Cleaning all data from rangeValues.txt file
+    with open('rangeValues.txt', "w") as file:
+        file.truncate(0)
+    c = demo(450)
+    print(c[0])
+    
     if msg.topic == "001/TESTER/BREAK/BREAKFORCE": 
         message0 = str(msg.payload.decode("utf-8"))
         m_in = json.loads(message0)
@@ -299,11 +307,8 @@ button.bind("<Enter>", on_enter)
 button.bind("<Leave>", on_leave)
 
 
-from returnFinalValueOfCalibration import return_calibration_values
 
-c = return_calibration_values()
 
-print(c[0])
 
 
 root.mainloop()
