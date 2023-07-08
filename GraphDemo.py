@@ -22,9 +22,11 @@ from matplotlib import style
 
 import json
 
-import MQtt_pub
+# import MQtt_pub
 
 from deleteItAfterDemo import demo
+
+import rpm_calibrated_variable
 
 # All Python Function are written here for this project
 # Function for increasment of j For Time Graph
@@ -38,10 +40,10 @@ def time_increasement():
 # Python Function For Bar Progress and For Variable Changing
 def on_mqttMessage(clien, userdata, msg):
     # Cleaning all data from rangeValues.txt file
-    with open('rangeValues.txt', "w") as file:
-        file.truncate(0)
-    c = demo(450)
-    print(c[0])
+    # with open('rangeValues.txt', "w") as file:
+    #     file.write("")
+    
+    
     
     if msg.topic == "001/TESTER/BREAK/BREAKFORCE": 
         message0 = str(msg.payload.decode("utf-8"))
@@ -53,6 +55,8 @@ def on_mqttMessage(clien, userdata, msg):
         rpm = int(m_in['rpm'])
         # Calling back function to increase time    
         time_increasement()
+        
+        calibrated_variable = demo(rpm)
         
         bar1['value']=break_force_left/3
         lbl2.config(text=break_force_left)
@@ -70,7 +74,16 @@ def on_mqttMessage(clien, userdata, msg):
         
         excelWeightlbl.config(text=axle_weight)
         
-        rpm_text.config(text=rpm)
+        # k = rpm_calibrated_variable.return_rpm_calibrated_variable(rpm)
+        # print(k)
+        # print(type(rpm))
+        # calibrated_variable = demo(rpm)
+        print(calibrated_variable[0])
+        m = calibrated_variable[0]
+        c = calibrated_variable[1]
+        calibrated_rpm = m*rpm + c
+        # rpm_text.config(text=rpm)
+        rpm_text.config(text=calibrated_rpm)
     
 def publish_msg(topic,msg):
     client.publish(topic,msg)
@@ -307,7 +320,9 @@ button.bind("<Enter>", on_enter)
 button.bind("<Leave>", on_leave)
 
 
-
+# rpm = 350
+# calibrated_variable = demo(rpm)
+# print(calibrated_variable[0])
 
 
 
