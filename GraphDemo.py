@@ -42,6 +42,7 @@ def on_mqttMessage(clien, userdata, msg):
         break_force_right = int(m_in['Break Force Right'])
         test_status = int(m_in['TestStatus'])
         axle_weight = int(m_in['Axle Weight'])
+        rpm = int(m_in['rpm'])
         # Calling back function to increase time    
         time_increasement()
         
@@ -60,6 +61,8 @@ def on_mqttMessage(clien, userdata, msg):
         car_testing_status(test_status)
         
         excelWeightlbl.config(text=axle_weight)
+        
+        rpm_text.config(text=rpm)
     
 def publish_msg(topic,msg):
     client.publish(topic,msg)
@@ -294,6 +297,13 @@ button.place(x=1175, y=670)
 
 button.bind("<Enter>", on_enter)
 button.bind("<Leave>", on_leave)
+
+
+from returnFinalValueOfCalibration import return_calibration_values
+
+c = return_calibration_values()
+
+print(c[0])
 
 
 root.mainloop()
