@@ -1,0 +1,57 @@
+AB:CD:EF:12:34:56
+
+# rpm_range_1
+range_min = 200
+range_max = 300
+m = 2
+c = 0.5
+no_of_holes = 8
+
+# rpm_range_2
+range_min = 301
+range_max = 400
+m = 3
+c = 0.6
+no_of_holes = 8
+
+# rpm_range_3
+range_min = 401
+range_max = 500
+m =4
+c = 0.7
+no_of_holes = 8
+
+# rpm_range_4
+range_min = 501
+range_max = 600
+m = 5
+c = 0.8
+no_of_holes = 8
+
+# rpm_range_5
+range_min = 601
+range_max = 700
+m = 6
+c = 0.9
+no_of_holes = 8
+
+# rpm_range_6
+range_min = 701
+range_max = 800
+m = 7
+c = 1.0
+no_of_holes = 8
+
+# rpm_range_7
+range_min = 801
+range_max = 900
+m = 8
+c = 1.2
+no_of_holes = 8
+
+
+12:34:56:78:9A:BC
+Device Name: AnotherDevice
+Manufacturer: ABC Company
+IP Address: 192.168.1.20
+...
