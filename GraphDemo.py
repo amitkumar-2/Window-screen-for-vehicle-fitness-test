@@ -22,11 +22,11 @@ from matplotlib import style
 
 import json
 
-# import MQtt_pub
+import calibrationForRange
 
-from deleteItAfterDemo import demo
+import calibrationForLBF
 
-import rpm_calibrated_variable
+import calibrationForRBF
 
 # All Python Function are written here for this project
 # Function for increasment of j For Time Graph
@@ -40,8 +40,10 @@ def time_increasement():
 # Python Function For Bar Progress and For Variable Changing
 def on_mqttMessage(clien, userdata, msg):
     # Cleaning all data from rangeValues.txt file
-    # with open('rangeValues.txt', "w") as file:
-    #     file.write("")
+    rangeValues_paths = ['rangeValuesForRPM.txt', 'rangeValuesForLBF.txt', 'rangeValuesForRBF.txt']
+    for rangeValues_path in rangeValues_paths:
+        with open(rangeValues_path, "w") as file:
+            file.write("")
     
     
     
@@ -56,18 +58,41 @@ def on_mqttMessage(clien, userdata, msg):
         # Calling back function to increase time    
         time_increasement()
         
-        calibrated_variable = demo(rpm)
+        # Code to calibrate rmp values
+        file_path = "calibrationConfigurationRangeFile.txt"
+        mac_address = "AB:CD:EF:12:34:56"
+        value = rpm
+        calibrated_variable_rpm = calibrationForRange.write_range_value(file_path, mac_address, value)
         
-        bar1['value']=break_force_left/3
-        lbl2.config(text=break_force_left)
+        # code to calibrate LBF values
+        file_path = "calibrationConfigurationLBFFile.txt"
+        mac_address = "AB:CD:EF:12:34:56"
+        value = break_force_left
+        calibrated_variable_lbf = calibrationForLBF.write_range_value(file_path, mac_address, value)
+        m_lbf = calibrated_variable_lbf[0]
+        c_lbf = calibrated_variable_lbf[1]
+        calibrated_lbf = m_lbf*break_force_left + c_lbf
+        
+        # code to calibrate RBF values
+        file_path = "calibrationConfigurationRBFFile.txt"
+        mac_address = "AB:CD:EF:12:34:56"
+        value = break_force_right
+        calibrated_variable_rbf = calibrationForRBF.write_range_value(file_path, mac_address, value)
+        m_rbf = calibrated_variable_rbf[0]
+        c_rbf = calibrated_variable_rbf[1]
+        calibrated_rbf = m_rbf*break_force_right + c_rbf
+        
+        
+        bar1['value']=calibrated_lbf/3
+        lbl2.config(text=calibrated_lbf)
         file = open("sampleText.txt", "a")
-        file.writelines(repr(j) + ',' +repr(break_force_left)+"\n")
+        file.writelines(repr(j) + ',' +repr(calibrated_lbf)+"\n")
         file.close()
     
-        bar2['value'] = break_force_right/3
-        lbl3.config(text=break_force_right)
+        bar2['value'] = calibrated_rbf/3
+        lbl3.config(text=calibrated_rbf)
         file = open("sampleText2.txt", "a")
-        file.writelines(repr(j) + ',' +repr(break_force_right) +"\n")
+        file.writelines(repr(j) + ',' +repr(calibrated_rbf) +"\n")
         file.close()
         
         car_testing_status(test_status)
@@ -78,10 +103,10 @@ def on_mqttMessage(clien, userdata, msg):
         # print(k)
         # print(type(rpm))
         # calibrated_variable = demo(rpm)
-        print(calibrated_variable[0])
-        m = calibrated_variable[0]
-        c = calibrated_variable[1]
-        calibrated_rpm = m*rpm + c
+        print("m value for RPM: ", calibrated_variable_rpm[0])
+        m_rpm = calibrated_variable_rpm[0]
+        c_rpm = calibrated_variable_rpm[1]
+        calibrated_rpm = m_rpm*rpm + c_rpm
         # rpm_text.config(text=rpm)
         rpm_text.config(text=calibrated_rpm)
     
