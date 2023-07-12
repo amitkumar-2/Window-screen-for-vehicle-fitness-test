@@ -28,6 +28,8 @@ import calibrationForLBF
 
 import calibrationForRBF
 
+import calibrationForAW
+
 # All Python Function are written here for this project
 # Function for increasment of j For Time Graph
 j = 0.1
@@ -40,7 +42,7 @@ def time_increasement():
 # Python Function For Bar Progress and For Variable Changing
 def on_mqttMessage(clien, userdata, msg):
     # Cleaning all data from rangeValues.txt file
-    rangeValues_paths = ['rangeValuesForRPM.txt', 'rangeValuesForLBF.txt', 'rangeValuesForRBF.txt']
+    rangeValues_paths = ['rangeValuesForRPM.txt', 'rangeValuesForLBF.txt', 'rangeValuesForRBF.txt', 'rangeValuesForAW.txt']
     for rangeValues_path in rangeValues_paths:
         with open(rangeValues_path, "w") as file:
             file.write("")
@@ -55,6 +57,7 @@ def on_mqttMessage(clien, userdata, msg):
         test_status = int(m_in['TestStatus'])
         axle_weight = int(m_in['Axle Weight'])
         rpm = int(m_in['rpm'])
+        
         # Calling back function to increase time    
         time_increasement()
         
@@ -63,25 +66,54 @@ def on_mqttMessage(clien, userdata, msg):
         mac_address = "AB:CD:EF:12:34:56"
         value = rpm
         calibrated_variable_rpm = calibrationForRange.write_range_value(file_path, mac_address, value)
+        print("m value for RPM: ", calibrated_variable_rpm[0])
+        m_rpm = calibrated_variable_rpm[0]
+        c_rpm = calibrated_variable_rpm[1]
+        calibrated_rpm = m_rpm*rpm + c_rpm
         
         # code to calibrate LBF values
         file_path = "calibrationConfigurationLBFFile.txt"
         mac_address = "AB:CD:EF:12:34:56"
-        value = break_force_left
-        calibrated_variable_lbf = calibrationForLBF.write_range_value(file_path, mac_address, value)
-        m_lbf = calibrated_variable_lbf[0]
-        c_lbf = calibrated_variable_lbf[1]
-        calibrated_lbf = m_lbf*break_force_left + c_lbf
+        offset = 2
+        coef = 9
+        raw_data = break_force_left
+        value = round(((raw_data - offset)/coef)*0.985, 2)
+        if value > 0:
+            calibrated_variable_lbf = calibrationForLBF.write_range_value(file_path, mac_address, value)
+            m_lbf = calibrated_variable_lbf[0]
+            c_lbf = calibrated_variable_lbf[1]
+            # print(m_lbf,c_lbf)
+            calibrated_lbf = m_lbf*value + c_lbf
+        else:
+            calibrated_lbf = value
         
         # code to calibrate RBF values
         file_path = "calibrationConfigurationRBFFile.txt"
         mac_address = "AB:CD:EF:12:34:56"
-        value = break_force_right
-        calibrated_variable_rbf = calibrationForRBF.write_range_value(file_path, mac_address, value)
-        m_rbf = calibrated_variable_rbf[0]
-        c_rbf = calibrated_variable_rbf[1]
-        calibrated_rbf = m_rbf*break_force_right + c_rbf
+        offset = 20
+        coef = 9
+        raw_data = break_force_right
+        value = round(((raw_data - offset)/coef)*0.985, 2)
+        if value > 0:
+            calibrated_variable_rbf = calibrationForRBF.write_range_value(file_path, mac_address, value)
+            m_rbf = calibrated_variable_rbf[0]
+            c_rbf = calibrated_variable_rbf[1]
+            calibrated_rbf = m_rbf*value + c_rbf
+        else:
+            calibrated_rbf = value
         
+        # Code to calibrate Axle Weight values
+        file_path = "calibrationConfigurationAWFile.txt"
+        mac_address = "AB:CD:EF:12:34:56"
+        offset = 320
+        coef = 90
+        raw_data = axle_weight
+        value = round((raw_data - offset)/coef, 2)
+        calibrated_variable_AW = calibrationForAW.write_range_value(file_path, mac_address, value)
+        m_AW = calibrated_variable_AW[0]
+        c_AW = calibrated_variable_AW[1]
+        calibrated_AW = m_AW*value + c_AW
+                
         
         bar1['value']=calibrated_lbf/3
         lbl2.config(text=calibrated_lbf)
@@ -97,17 +129,9 @@ def on_mqttMessage(clien, userdata, msg):
         
         car_testing_status(test_status)
         
-        excelWeightlbl.config(text=axle_weight)
+        # excelWeightlbl.config(text=axle_weight)
+        excelWeightlbl.config(text=calibrated_AW)
         
-        # k = rpm_calibrated_variable.return_rpm_calibrated_variable(rpm)
-        # print(k)
-        # print(type(rpm))
-        # calibrated_variable = demo(rpm)
-        print("m value for RPM: ", calibrated_variable_rpm[0])
-        m_rpm = calibrated_variable_rpm[0]
-        c_rpm = calibrated_variable_rpm[1]
-        calibrated_rpm = m_rpm*rpm + c_rpm
-        # rpm_text.config(text=rpm)
         rpm_text.config(text=calibrated_rpm)
     
 def publish_msg(topic,msg):
@@ -221,10 +245,10 @@ informationRightlbl = Label(root, text="Break Force Right", foreground=informati
 informationRightlbl.place(x=505, y=120)
 
 # Variable Data Measurment Labeling
-lbl2 = Label(root, text="0", foreground='#CC0CA1', background=dynamic_data_background_color, font=('font_family', 26,'bold'), padding=(60,20))
+lbl2 = Label(root, text="0", foreground='#CC0CA1', background=dynamic_data_background_color, font=('font_family', 20,'bold'), padding=(50,15))
 lbl2.place(x=100, y=200)
 
-lbl3 = Label(root, text="0", foreground='#0187D5', background=dynamic_data_background_color, font=('font_family', 26,'bold'), padding=(60, 20))
+lbl3 = Label(root, text="0", foreground='#0187D5', background=dynamic_data_background_color, font=('font_family', 20,'bold'), padding=(50, 15))
 lbl3.place(x=500, y=200)
 
 # Progress bar Styling Color
@@ -343,12 +367,6 @@ button.place(x=1175, y=670)
 
 button.bind("<Enter>", on_enter)
 button.bind("<Leave>", on_leave)
-
-
-# rpm = 350
-# calibrated_variable = demo(rpm)
-# print(calibrated_variable[0])
-
 
 
 root.mainloop()
